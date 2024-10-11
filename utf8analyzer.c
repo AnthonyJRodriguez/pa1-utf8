@@ -5,7 +5,7 @@
 
 
 int32_t is_ascii(char str[]) {
-   for (int i = 0; str[i] != ‘\0’; i++){
+   for (int i = 0; str[i] != '\0'; i++){
        if ((unsigned char) str[i] > 127) {
            return 0;
        }
@@ -30,7 +30,7 @@ int32_t capitalize_ascii(char str[]) {
 }
 
 
-int32_t width_from_start_byte(char start_byte) {
+int32_t width_from_start_byte(unsigned char start_byte){
 
 
    if ((start_byte & 0x80) == 0){
@@ -48,11 +48,7 @@ int32_t width_from_start_byte(char start_byte) {
    else {
        return -1;
    }
-
-
 }
-
-
 
 
 int32_t utf8strlen(char str[]){
@@ -61,7 +57,7 @@ int32_t utf8strlen(char str[]){
 
 
    while (str[indexing] != 0){
-       int32_t width_of = width_from_start_byte(str[index]);
+       int32_t width_of = width_from_start_byte(str[indexing]);
        if (width_of < 0){
            return -1;
        }
@@ -130,12 +126,6 @@ void utf8_substring(char str[], int32_t cpi_start, int32_t cpi_end, char result[
 }
 
 
-int main() {
-   char result[17]; // Ensure this has enough space for the result
-   utf8_substring("🦀🦮🦮🦀🦀🦮🦮", 3, 7, result);
-   printf("String: 🦀🦮🦮🦀🦀🦮🦮\nSubstring: %s\n", result); // Expected output: 🦀🦀🦮🦮
-   return 0;
-}
 
 
 int32_t codepoint_at(char str[], int32_t cpi) {
@@ -207,48 +197,47 @@ char is_animal_emoji_at(char str[], int32_t cpi) {
 
 
 
-
-
-
-
 int main() {
    unsigned char input[100];
-
-
-   // The Input string
-   printf("Enter a UTF-8 encoded string: ");
-   fgets((char*)input, sizeof(input), stdin);
-   input[strcspn((char*)input, "\n")] = '\0';
+// Read input string
+fgets((char*)input, sizeof(input), stdin);
 
 
 
 
-   // Check if valid ASCII
-   if (is_ascii((char*)input)) {
-       printf("Valid ASCII: true\n");
-   } else {
-       printf("Valid ASCII: false\n");
-   }
+// Remove trailing newline if present
+size_t len = strlen((char*)input);
+if (len > 0 && input[len-1] == '\n') {
+   input[len-1] = '\0';
+}
 
 
 
 
-   // The Uppercase ASCII characters
+// Now print valid ASCII status on a new line
+if (is_ascii((char*)input)) {
+   printf("Valid ASCII: true\n");
+} else {
+   printf("Valid ASCII: false\n");
+}
+
+
+   // Uppercase ASCII characters
    int32_t updated_chars = capitalize_ascii((char*)input);
    printf("Uppercased ASCII: \"%s\"\n", input);
 
 
 
 
-   // The Length in bytes
+   // Length in bytes
    int total_bytes = strlen((char*)input);
    printf("Length in bytes: %d\n", total_bytes);
 
 
 
 
-   // The # of UTF-8 code points
-   int32_t codepoint_count = utf8_strlen((char*)input);
+   // # of UTF-8 code points
+   int32_t codepoint_count = utf8strlen((char*)input);
    if (codepoint_count == -1) {
        printf("Invalid UTF-8 string\n");
        return 1;
@@ -258,7 +247,7 @@ int main() {
 
 
 
-   // The Bytes per code point
+   // Bytes per code point
    printf("Bytes per code point: ");
    for (int i = 0; input[i] != '\0';) {
        int32_t width = width_from_start_byte(input[i]);
@@ -270,7 +259,7 @@ int main() {
 
 
 
-   // The Substring of the first 6 codepoints
+   // Substring of the first 6 codepoints
    char result[50];
    utf8_substring((char*)input, 0, 6, result);
    printf("Substring of the first 6 code points: \"%s\"\n", result);
@@ -278,7 +267,7 @@ int main() {
 
 
 
-   // The Code points as decimal numbers
+   // Code points as decimal numbers
    printf("Code points as decimal numbers: ");
    for (int i = 0; i < codepoint_count; i++) {
        printf("%d ", codepoint_at((char *)input, i));
@@ -288,7 +277,7 @@ int main() {
 
 
 
-   // The Animal emoji check
+   // Animal emoji check
    printf("Animal emojis: ");
    for (int i = 0, byte_index = 0; i < codepoint_count; i++) {
        if (is_animal_emoji_at((char*)input, i)) {
@@ -296,9 +285,9 @@ int main() {
            for (int j = 0; j < width; j++) {
                printf("%c", input[byte_index + j]);
            }
-           printf(" ");
+           printf(" "); // Space between emojis
        }
-       byte_index += width_from_start_byte(input[byte_index]);
+       byte_index += width_from_start_byte(input[byte_index]); // Move to next codepoint
    }
    printf("\n");
 
@@ -307,8 +296,6 @@ int main() {
 
    return 0;
 }
-
-
 
 
 
